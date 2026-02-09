@@ -1,4 +1,5 @@
 import numpy as np
+import pyautogui
 class GestureRecognizer:
     def __init__(self):
         self.previous_gesture = None
@@ -122,5 +123,24 @@ class GestureRecognizer:
             return "move_right"
         
         return "none"
+    
+def execute_game_action(gesture):
+    """Map gestures to keyboard inputs for Shadow Fight Arena"""
+    action_map = {
+        "punch_left": "j",
+        "punch_right": "k",
+        "kick_left": "u",
+        "kick_right": "i",
+        "block": "l", 
+        "jump": "w",
+        "crouch": "s", 
+        "move_left": "a",
+        "move_right": "d",
+    }
+    
+    if gesture in action_map:
+        pyautogui.press(action_map[gesture])
+        return action_map[gesture]
+    return None
     
 
