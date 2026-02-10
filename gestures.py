@@ -7,7 +7,7 @@ class GestureRecognizer:
         
     def get_landmark_coords(self, landmarks, index):
         """Extract x, y, z coordinates of a landmark"""
-        return landmarks[0][index].x, landmarks[0][index].y, landmarks[0][index].z
+        return landmarks[index].x, landmarks[index].y, landmarks[index].z
     
     def calculate_distance(self, point1, point2):
         """Calculate Euclidean distance between two points"""
@@ -22,7 +22,7 @@ class GestureRecognizer:
         left_wrist = self.get_landmark_coords(landmarks, 15)
         
         arm_extension = left_wrist[2] < left_shoulder[2] - 0.1
-        elbow_extended = self.calculate_distance(left_shoulder, left_wrist) > 0.3
+        elbow_extended = self.calculate_distance(left_shoulder, left_wrist) > 0.8
         
         return arm_extension and elbow_extended
     
@@ -33,7 +33,7 @@ class GestureRecognizer:
         right_wrist = self.get_landmark_coords(landmarks, 16)
         
         arm_extension = right_wrist[2] < right_shoulder[2] - 0.1
-        elbow_extended = self.calculate_distance(right_shoulder, right_wrist) > 0.3
+        elbow_extended = self.calculate_distance(right_shoulder, right_wrist) > 0.6
         
         return arm_extension and elbow_extended
     
