@@ -43,6 +43,10 @@ def main():
 
     with PoseLandmarker.create_from_options(option) as detector:
         cap = cv2.VideoCapture(0)
+        
+        # Optional: Lower resolution for better performance
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
         while True:
             step, img = cap.read()
@@ -51,7 +55,6 @@ def main():
                 break
 
             img = cv2.flip(img, 1)
-            
             rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             timestamp_ms = int(frame_count * 1000 / 30)
             mp_img = mp.Image(data=rgb_img, image_format=mp.ImageFormat.SRGB)
@@ -60,19 +63,24 @@ def main():
             result = detector.detect_for_video(mp_img, timestamp_ms)
             annoted_img = draw_landmarks_on_image(result, mp_img.numpy_view())
             
-
             gesture = "none"
             key_pressed = None
             
             if result.pose_landmarks:
-                landmarks = result.pose_landmarks[0] 
+                landmarks = result.pose_landmarks[0]
                 gesture = gesture_recognizer.recognize_gesture(landmarks)
-
-                if gesture != gesture_recognizer.previous_gesture and gesture != "none":
+                
+                # Apply cooldown and gesture change check
+                current_time = time.time()
+                if (gesture != gesture_recognizer.previous_gesture and 
+                    gesture != "none" and 
+                    current_time - gesture_recognizer.last_action_time > gesture_recognizer.cooldown):
                     key_pressed = execute_game_action(gesture)
                     gesture_recognizer.previous_gesture = gesture # type: ignore
+                    gesture_recognizer.last_action_time = current_time # type: ignore
                 elif gesture == "none":
                     gesture_recognizer.previous_gesture = None
+            
             bgr_annoted_img = cv2.cvtColor(annoted_img, cv2.COLOR_RGB2BGR)
             cv2.putText(bgr_annoted_img, f"Gesture: {gesture}", (10, 30),
                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
@@ -87,8 +95,6 @@ def main():
                 
         cap.release()
         cv2.destroyAllWindows()
-
-
 if __name__ == "__main__":
     main()
 
